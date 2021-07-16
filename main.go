@@ -81,24 +81,24 @@ type repository struct {
 }
 
 type owner struct {
-	Login             string
-	Id                int64
-	NodeId            string
-	AvatarUrl         string
-	GravatarId        string
-	Url               string
-	HtmlUrl           string
-	FollowersUrl      string
-	FollowingUrl      string
-	GistsUrl          string
-	StarredUrl        string
-	SubscriptionsUrl  string
-	OrganizationsUrl  string
-	ReposUrl          string
-	EventsUrl         string
-	ReceivedEventsUrl string
-	Type              string
-	SiteAdmin         bool
+	Login               string
+	Id                  int64
+	Node_Id             string
+	Avatar_Url          string
+	Gravatar_Id         string
+	Url                 string
+	Html_Url            string
+	Followers_Url       string
+	Following_Url       string
+	Gists_Url           string
+	Starred_Url         string
+	Subscriptions_Url   string
+	Organizations_Url   string
+	Repos_Url           string
+	Events_Url          string
+	Received_Events_Url string
+	Type                string
+	Site_Admin          bool
 }
 
 func main() {
