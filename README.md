@@ -3,6 +3,7 @@
 ![](https://img.shields.io/github/languages/top/xpl0ited1/githubGrep?style=plastic)
 ![](https://img.shields.io/github/issues/xpl0ited1/githubGrep?style=plastic)
 ![](https://img.shields.io/github/license/xpl0ited1/githubGrep?style=plastic)
+![](https://img.shields.io/github/v/tag/xpl0ited1/githubGrep?label=version&style=plastic)
 
 <hr/>
 
