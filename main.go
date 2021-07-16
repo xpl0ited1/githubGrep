@@ -216,7 +216,7 @@ func print_formatted_results(result *result, search *string, lookedAt string, la
 				fmt.Println("Eror decoding content: ", err)
 			}
 
-			fmt.Printf("%s", content)
+			fmt.Printf("%s\n", content)
 		}
 	}
 }
