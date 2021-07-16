@@ -136,14 +136,43 @@ func main() {
 	lang := flag.String("lang", "", "programming language")
 	showContent := flag.Bool("content", false, "display content of code")
 	page := flag.Int("page", 1, "page number, only if results are more than 100")
+	user := flag.String("user", "", "user to look at")
+	repo := flag.String("repo", "", "repo to look at")
 
 	flag.Parse()
 
 	query := ""
+	lookedAt := ""
 	if *lang != "" {
-		query = *search + " language:" + *lang + " org:" + *org
+		if *org != "" {
+			query = *search + " language:" + *lang + " org:" + *org
+			lookedAt = *org
+		}
+
+		if *user != "" {
+			query = *search + " language:" + *lang + " user:" + *user
+			lookedAt = *user
+		}
+
+		if *repo != "" {
+			query = *search + " language:" + *lang + " repo:" + *repo
+			lookedAt = *repo
+		}
 	} else {
-		query = *search + " org:" + *org
+		if *org != "" {
+			query = *search + " org:" + *org
+			lookedAt = *org
+		}
+
+		if *user != "" {
+			query = *search + " user:" + *user
+			lookedAt = *user
+		}
+
+		if *repo != "" {
+			query = *search + " repo:" + *repo
+			lookedAt = *repo
+		}
 	}
 	url := GITHUB_URL + SEARCH_CODE_ENDPOINT + "?q=" + url2.QueryEscape(query) + "&per_page=100&page=" + strconv.Itoa(*page)
 
@@ -166,12 +195,12 @@ func main() {
 	var data result
 	json.Unmarshal(body, &data)
 
-	print_formatted_results(&data, search, org, lang, showContent)
+	print_formatted_results(&data, search, lookedAt, lang, showContent)
 }
 
-func print_formatted_results(result *result, search *string, org *string, lang *string, showContent *bool) {
+func print_formatted_results(result *result, search *string, lookedAt string, lang *string, showContent *bool) {
 	fmt.Printf("Search: %s\n", *search)
-	fmt.Printf("Organization: %s\n", *org)
+	fmt.Printf("Looked at: %s\n", lookedAt)
 
 	if *lang != "" {
 		fmt.Printf("Language: %s\n", *lang)
