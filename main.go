@@ -1,12 +1,19 @@
+/* Author: xpl0ited1 (Bastian Muhlhauser)
+   Date: July 16th, 2021
+*/
+
 package main
 
 import (
+	"encoding/base64"
 	"encoding/json"
+	"flag"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
 	url2 "net/url"
+	"strconv"
 )
 
 const (
@@ -101,27 +108,118 @@ type owner struct {
 	Site_Admin          bool
 }
 
-func main() {
-	query := "test language:HTML+ERB org:Github"
-	url := GITHUB_URL + SEARCH_CODE_ENDPOINT + "?q=" + url2.QueryEscape(query)
-	resp, err := http.Get(url)
+type content struct {
+	Name         string
+	Path         string
+	Sha          string
+	Size         int32
+	Url          string
+	Html_Url     string
+	Git_Url      string
+	Download_Url string
+	Type         string
+	Content      string
+	Encoding     string
+	_links       links
+}
 
+type links struct {
+	Self string
+	Git  string
+	Html string
+}
+
+func main() {
+
+	search := flag.String("search", "", "code to search")
+	org := flag.String("org", "", "organization to look at")
+	lang := flag.String("lang", "", "programming language")
+	showContent := flag.Bool("content", false, "display content of code")
+	page := flag.Int("page", 1, "page number, only if results are more than 100")
+
+	flag.Parse()
+
+	query := ""
+	if *lang != "" {
+		query = *search + " language:" + *lang + " org:" + *org
+	} else {
+		query = *search + " org:" + *org
+	}
+	url := GITHUB_URL + SEARCH_CODE_ENDPOINT + "?q=" + url2.QueryEscape(query) + "&per_page=100&page=" + strconv.Itoa(*page)
+
+	client := &http.Client{}
 	req, err := http.NewRequest("GET", url, nil)
 	req.Header.Add("Accept", "application/vnd.github.v3+json")
 
+	resp, err := client.Do(req)
+
 	if err != nil {
-		// handle error
 		log.Fatalln(err)
 	}
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 
-	//sb := string(body)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
 	var data result
 	json.Unmarshal(body, &data)
 
-	fmt.Printf("Results: %v\n", data)
+	print_formatted_results(&data, search, org, lang, showContent)
+}
 
-	//log.Printf(sb)
+func print_formatted_results(result *result, search *string, org *string, lang *string, showContent *bool) {
+	fmt.Printf("Search: %s\n", *search)
+	fmt.Printf("Organization: %s\n", *org)
 
+	if *lang != "" {
+		fmt.Printf("Language: %s\n", *lang)
+	}
+
+	fmt.Printf("Results: %d\n", result.Total_Count)
+	for _, item := range result.Items {
+		fmt.Printf("URL: %s\n", item.Html_Url)
+		if *showContent {
+			content, err := getContent(item.Git_Url)
+
+			if err != nil {
+				fmt.Println("Eror decoding content: ", err)
+			}
+
+			fmt.Printf("%s", content)
+		}
+	}
+}
+
+func getContent(url string) (string, error) {
+	client := &http.Client{}
+	req, err := http.NewRequest("GET", url, nil)
+	req.Header.Add("Accept", "application/vnd.github.v3+json")
+
+	resp, err := client.Do(req)
+
+	if err != nil {
+		log.Fatalln(err)
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	var data content
+	json.Unmarshal(body, &data)
+
+	if data.Encoding == "base64" {
+		decodedData, err := base64.StdEncoding.DecodeString(data.Content)
+		if err != nil {
+			return "", err
+		}
+
+		return fmt.Sprintf("%s", decodedData), nil
+	}
+
+	return "", nil
 }
